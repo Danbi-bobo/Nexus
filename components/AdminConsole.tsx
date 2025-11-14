@@ -8,17 +8,17 @@ import { Button } from './ui/Button';
 type AdminTab = 'Users' | 'Departments' | 'Roles' | 'Settings' | 'Audit';
 
 const AdminTable: React.FC<{ headers: string[]; data: (string | React.ReactNode)[][]; }> = ({ headers, data }) => (
-    <table className="min-w-full divide-y divide-gray-700">
-        <thead className="bg-gray-800">
+    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-                {headers.map(h => <th key={h} scope="col" className="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">{h}</th>)}
+                {headers.map(h => <th key={h} scope="col" className="p-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>)}
                 <th scope="col" className="relative p-4"><span className="sr-only">Edit</span></th>
             </tr>
         </thead>
-        <tbody className="divide-y divide-gray-700">
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {data.map((row, rowIndex) => (
-                <tr key={rowIndex} className="hover:bg-gray-800/50">
-                    {row.map((cell, cellIndex) => <td key={cellIndex} className="p-4 whitespace-nowrap text-sm text-gray-300">{cell}</td>)}
+                <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    {row.map((cell, cellIndex) => <td key={cellIndex} className="p-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{cell}</td>)}
                      <td className="p-4 whitespace-nowrap text-right text-sm font-medium">
                         <Button variant="ghost" size="sm">Edit</Button>
                     </td>
@@ -40,9 +40,9 @@ export const AdminConsole: React.FC = () => {
             case 'Roles':
                 return <AdminTable headers={['Role Name']} data={Object.values(UserRole).map(r => [r])} />;
             case 'Audit':
-                return <p className="text-gray-400 p-4">Audit log viewer would be here.</p>;
+                return <p className="text-gray-500 dark:text-gray-400 p-4">Audit log viewer would be here.</p>;
             case 'Settings':
-                 return <p className="text-gray-400 p-4">System settings configuration would be here.</p>;
+                 return <p className="text-gray-500 dark:text-gray-400 p-4">System settings configuration would be here.</p>;
             default: return null;
         }
     }
@@ -50,11 +50,11 @@ export const AdminConsole: React.FC = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold text-white">Admin Console</h1>
-                <p className="text-gray-400 mt-1">Manage users, permissions, and system configuration.</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Console</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Manage users, permissions, and system configuration.</p>
             </div>
             <Card>
-                <CardHeader className="p-0 border-b border-gray-700">
+                <CardHeader className="p-0 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex space-x-2 px-4">
                         {(['Users', 'Departments', 'Roles', 'Audit', 'Settings'] as AdminTab[]).map(tab => (
                              <button 
@@ -62,8 +62,8 @@ export const AdminConsole: React.FC = () => {
                                 onClick={() => setActiveTab(tab)}
                                 className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
                                     activeTab === tab 
-                                    ? 'border-indigo-500 text-indigo-400' 
-                                    : 'border-transparent text-gray-400 hover:text-white hover:border-gray-500'
+                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white dark:hover:border-gray-500'
                                 }`}
                              >{tab}</button>
                         ))}

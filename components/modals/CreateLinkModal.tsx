@@ -49,20 +49,20 @@ const CreateLinkModal: React.FC<CreateLinkModalProps> = ({ isOpen, onClose, onAd
             <Input id="url" label="URL" type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://example.com" required icon="link-outline"/>
             <Input id="title" label="Title" type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Q4 Marketing Plan" required icon="text-outline"/>
             <div>
-                 <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-300">Description</label>
-                 <textarea id="description" rows={3} value={description} onChange={e => setDescription(e.target.value)} className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" placeholder="A brief description of the link..."></textarea>
+                 <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                 <textarea id="description" rows={3} value={description} onChange={e => setDescription(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="A brief description of the link..."></textarea>
             </div>
             <Input id="tags" label="Tags (comma-separated)" type="text" value={tags} onChange={e => setTags(e.target.value)} placeholder="planning, marketing, q4" icon="pricetags-outline"/>
             <div className="grid grid-cols-2 gap-4">
                  <div>
-                    <label htmlFor="visibility" className="block mb-2 text-sm font-medium text-gray-300">Visibility</label>
-                    <select id="visibility" value={visibility} onChange={e => setVisibility(e.target.value as Visibility)} className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                    <label htmlFor="visibility" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Visibility</label>
+                    <select id="visibility" value={visibility} onChange={e => setVisibility(e.target.value as Visibility)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         {Object.values(Visibility).map(v => <option key={v} value={v}>{v}</option>)}
                     </select>
                 </div>
                  <div>
-                    <label htmlFor="department" className="block mb-2 text-sm font-medium text-gray-300">Department</label>
-                    <select id="department" value={departmentId} onChange={e => setDepartmentId(e.target.value)} className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                    <label htmlFor="department" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
+                    <select id="department" value={departmentId} onChange={e => setDepartmentId(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         {DEPARTMENTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                     </select>
                 </div>

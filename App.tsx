@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
@@ -16,6 +16,20 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('Dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [links, setLinks] = useState<Link[]>([]); // This would be populated from an API
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
+
 
   const addLink = (newLink: Omit<Link, 'id' | 'owner' | 'createdAt' | 'lastAccessedAt' | 'clickCount'>) => {
     // In a real app, this would be an API call
@@ -37,7 +51,7 @@ const App: React.FC = () => {
       case 'Explorer':
         return <LinkExplorer />;
       case 'Analytics':
-        return <Analytics />;
+        return <Analytics theme={theme} />;
       case 'Admin':
         return <AdminConsole />;
       default:
@@ -46,11 +60,16 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-200">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header user={CURRENT_USER} onAddLink={() => setIsModalOpen(true)} />
-        <main className="flex-1 overflow-y-auto bg-gray-900 p-4 sm:p-6 lg:p-8">
+        <Header 
+          user={CURRENT_USER} 
+          onAddLink={() => setIsModalOpen(true)} 
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {renderPage()}
         </main>
       </div>

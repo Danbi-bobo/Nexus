@@ -20,8 +20,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => (
       <ion-icon name={icon} class="text-2xl text-white"></ion-icon>
     </div>
     <div>
-      <p className="text-sm text-gray-400">{title}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+      <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
     </div>
   </Card>
 );
@@ -29,8 +29,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => (
 const QuickLinkItem: React.FC<{ link: Link }> = ({ link }) => (
   <li className="flex items-center justify-between py-3">
     <div className="truncate">
-      <p className="font-medium text-indigo-400 hover:underline cursor-pointer">{link.title}</p>
-      <p className="text-sm text-gray-500">{link.category}</p>
+      <p className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">{link.title}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-500">{link.category}</p>
     </div>
     <StatusBadge status={link.status} />
   </li>
@@ -44,8 +44,8 @@ export const Dashboard: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNa
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-white">Welcome back, {CURRENT_USER.name.split(' ')[0]}!</h1>
-        <p className="text-gray-400 mt-1">Here's what's happening in your workspace today.</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, {CURRENT_USER.name.split(' ')[0]}!</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Here's what's happening in your workspace today.</p>
       </div>
 
       {/* Stats Grid */}
@@ -60,21 +60,21 @@ export const Dashboard: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNa
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-semibold text-white">Most Popular in {DEPARTMENTS.find(d => d.id === CURRENT_USER.departmentId)?.name}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Most Popular in {DEPARTMENTS.find(d => d.id === CURRENT_USER.departmentId)?.name}</h2>
           </CardHeader>
           <CardContent>
-            <ul className="divide-y divide-gray-700">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {popularLinks.map(link => <QuickLinkItem key={link.id} link={link} />)}
             </ul>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-white">Recently Accessed</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recently Accessed</h2>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('Explorer')}>View All</Button>
           </CardHeader>
           <CardContent>
-            <ul className="divide-y divide-gray-700">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {recentLinks.map(link => <QuickLinkItem key={link.id} link={link} />)}
             </ul>
           </CardContent>
