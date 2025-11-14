@@ -1,0 +1,130 @@
+
+import React, { useState } from 'react';
+import { LINKS, DEPARTMENTS } from '../constants';
+import { Link, LinkStatus, Visibility } from '../types';
+import { Card, CardContent } from './ui/Card';
+import { StatusBadge, Badge } from './ui/Badge';
+import { Button } from './ui/Button';
+
+type ViewMode = 'card' | 'table';
+
+const LinkCard: React.FC<{ link: Link }> = ({ link }) => (
+  <Card className="flex flex-col h-full hover:border-indigo-500 transition-all">
+    <CardContent className="flex-grow">
+      <div className="flex justify-between items-start">
+        <h3 className="text-lg font-semibold text-white mb-2">{link.title}</h3>
+        <StatusBadge status={link.status} />
+      </div>
+      <p className="text-gray-400 text-sm mb-4 line-clamp-2">{link.description}</p>
+      
+      {link.hasMetadataOnlyAccess ? (
+        <div className="bg-gray-900/50 p-3 rounded-md text-center">
+            <p className="text-sm text-yellow-400 mb-2">Metadata-only access</p>
+            <Button variant="secondary" size="sm">Request Full Access</Button>
+        </div>
+      ) : (
+        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-indigo-400 text-sm truncate block hover:underline">
+          <ion-icon name="link-outline" class="mr-1 align-middle"></ion-icon>
+          {link.url}
+        </a>
+      )}
+    </CardContent>
+    <div className="p-4 border-t border-gray-700">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center">
+          <img src={link.owner.avatarUrl} alt={link.owner.name} className="w-6 h-6 rounded-full mr-2" />
+          <span className="text-xs text-gray-400">{link.owner.name}</span>
+        </div>
+        <Badge>{link.visibility}</Badge>
+      </div>
+       <div className="flex flex-wrap gap-1">
+        {link.tags.slice(0, 3).map(tag => <Badge key={tag} color="blue">{tag}</Badge>)}
+      </div>
+    </div>
+  </Card>
+);
+
+const LinkTableRow: React.FC<{ link: Link }> = ({ link }) => (
+    <tr className="hover:bg-gray-800/50">
+        <td className="p-4 whitespace-nowrap text-sm font-medium text-white">{link.title}</td>
+        <td className="p-4 whitespace-nowrap text-sm text-gray-400"><StatusBadge status={link.status} /></td>
+        <td className="p-4 whitespace-nowrap text-sm text-gray-400">{link.owner.name}</td>
+        <td className="p-4 whitespace-nowrap text-sm text-gray-400">{new Date(link.lastAccessedAt).toLocaleDateString()}</td>
+        <td className="p-4 whitespace-nowrap text-right text-sm font-medium">
+             {link.hasMetadataOnlyAccess ? (
+                <Button variant="secondary" size="sm">Request Access</Button>
+             ) : (
+                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="ghost" size="sm"><ion-icon name="open-outline" class="text-lg"></ion-icon></Button>
+                </a>
+             )}
+        </td>
+    </tr>
+)
+
+export const LinkExplorer: React.FC = () => {
+  const [links] = useState<Link[]>(LINKS);
+  const [viewMode, setViewMode] = useState<ViewMode>('card');
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Link Explorer</h1>
+          <p className="text-gray-400 mt-1">Browse, search and filter all links in the repository.</p>
+        </div>
+         <div className="flex items-center gap-2 bg-gray-800 p-1 rounded-lg">
+            <Button variant={viewMode === 'card' ? 'secondary' : 'ghost'} onClick={() => setViewMode('card')}>
+                <ion-icon name="grid-outline" class="text-lg"></ion-icon>
+            </Button>
+            <Button variant={viewMode === 'table' ? 'secondary' : 'ghost'} onClick={() => setViewMode('table')}>
+                <ion-icon name="list-outline" class="text-lg"></ion-icon>
+            </Button>
+        </div>
+      </div>
+      
+      {/* Filters */}
+      <Card className="p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <select className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                <option>All Departments</option>
+                {DEPARTMENTS.map(d => <option key={d.id}>{d.name}</option>)}
+            </select>
+             <select className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                <option>All Statuses</option>
+                {Object.values(LinkStatus).map(s => <option key={s}>{s}</option>)}
+            </select>
+             <input type="text" placeholder="Filter by tag..." className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" />
+             <input type="text" placeholder="Filter by owner..." className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" />
+             <Button variant="primary" className="col-span-2 md:col-span-4 lg:col-span-1">Apply Filters</Button>
+        </div>
+      </Card>
+
+      {/* Content */}
+      {viewMode === 'card' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {links.map((link) => (
+            <LinkCard key={link.id} link={link} />
+          ))}
+        </div>
+      ) : (
+          <Card>
+              <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-gray-800">
+                      <tr>
+                          <th scope="col" className="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Title</th>
+                          <th scope="col" className="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                          <th scope="col" className="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Owner</th>
+                          <th scope="col" className="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Last Accessed</th>
+                          <th scope="col" className="relative p-4"><span className="sr-only">Actions</span></th>
+                      </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                      {links.map(link => <LinkTableRow key={link.id} link={link} />)}
+                  </tbody>
+              </table>
+          </Card>
+      )}
+    </div>
+  );
+};
