@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const LARK_APP_ID = import.meta.env.VITE_LARK_APP_ID;
-const REDIRECT_URI = `${import.meta.env.VITE_LARK_REDIRECT_URI}/auth/callback`;
+const REDIRECT_URI = `${import.meta.env.VITE_LARK_REDIRECT_URI}`;
 const SUPABASE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL + "/functions/v1/lark-oauth-callback";
 
 export default function LarkLogin() {
