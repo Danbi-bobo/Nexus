@@ -4,7 +4,7 @@ import { Button } from '../ui/Button';
 import { Search, Plus, Moon, Sun, Bell } from 'lucide-react';
 
 interface HeaderProps {
-  user: User;
+  user?: User;
   onAddLink: () => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onAddLink, theme, toggleTh
             <Plus className="h-5 w-5 -ml-1 mr-2" />
             Add Link
           </Button>
-           <Button onClick={onAddLink} variant="primary" size="md" className="sm:hidden p-2">
+          <Button onClick={onAddLink} variant="primary" size="md" className="sm:hidden p-2">
             <Plus className="h-5 w-5" />
           </Button>
           
@@ -51,22 +51,24 @@ export const Header: React.FC<HeaderProps> = ({ user, onAddLink, theme, toggleTh
             <Bell className="h-6 w-6" />
           </button>
 
-          <div className="relative">
-            <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center space-x-2">
-              <img className="h-9 w-9 rounded-full" src={user.avatarUrl} alt="User avatar" />
-              <div className="hidden md:flex flex-col items-start">
+          {user && (
+            <div className="relative">
+              <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center space-x-2">
+                <img className="h-9 w-9 rounded-full" src={user.avatarUrl} alt="User avatar" />
+                <div className="hidden md:flex flex-col items-start">
                   <span className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">{user.role}</span>
-              </div>
-            </button>
-            {menuOpen && (
-              <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Your Profile</a>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Settings</a>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Sign out</a>
-              </div>
-            )}
-          </div>
+                </div>
+              </button>
+              {menuOpen && (
+                <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Your Profile</a>
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Settings</a>
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Sign out</a>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
