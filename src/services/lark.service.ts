@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Lark API Base URLs
-const LARK_API_BASE = 'https://open.larksuite.com/open-apis/';
+const LARK_API_BASE = 'https://open.larksuite.com/open-apis';
 
 // Lark Configuration
 const LARK_CONFIG = {
@@ -96,23 +96,32 @@ class LarkService {
   async getUserAccessToken(code: string): Promise<LarkTokenResponse> {
     try {
       const response = await axios.post(
-        `${LARK_API_BASE}/authen/v1/access_token`,
+        `${LARK_API_BASE}/authen/v2/oauth/token`,
         {
           grant_type: 'authorization_code',
+          client_id: LARK_CONFIG.appId,
+          client_secret: LARK_CONFIG.appSecret,
           code,
+          redirect_uri: LARK_CONFIG.redirectUri,
         },
         {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
           },
         }
       );
 
-      if (response.data.code === 0) {
-        return response.data.data;
+      // V2 API returns data directly in response body, not nested in data.data
+      if (response.data.code === '0' || response.data.access_token) {
+        return {
+          access_token: response.data.access_token,
+          token_type: response.data.token_type,
+          expires_in: response.data.expires_in,
+          refresh_token: response.data.refresh_token,
+        };
       }
 
-      throw new Error(`Failed to get user access token: ${response.data.msg}`);
+      throw new Error(`Failed to get user access token: ${response.data.error_description || response.data.error}`);
     } catch (error) {
       console.error('Error getting user access token:', error);
       throw error;
