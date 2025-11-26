@@ -1,7 +1,6 @@
-
 import React from 'react';
-import { Card, CardHeader, CardContent } from './ui/Card';
-import { ANALYTICS_DATA, LINKS } from '../constants';
+import { Card, CardHeader, CardContent } from '../../../components/ui/Card';
+import { ANALYTICS_DATA, LINKS } from '../../../constants';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface AnalyticsProps {

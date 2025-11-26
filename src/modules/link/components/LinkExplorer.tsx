@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
-import { LINKS, DEPARTMENTS } from '../constants';
-import { Link, LinkStatus, Visibility } from '../types';
-import { Card, CardContent } from './ui/Card';
-import { StatusBadge, Badge } from './ui/Badge';
-import { Button } from './ui/Button';
+import { LINKS, DEPARTMENTS } from '../../../constants';
+import { Link, LinkStatus, Visibility } from '../../../types';
+import { Card, CardContent } from '../../../components/ui/Card';
+import { StatusBadge, Badge } from '../../../components/ui/Badge';
+import { Button } from '../../../components/ui/Button';
+import { Link as LinkIcon, ExternalLink, LayoutGrid, List } from 'lucide-react';
 
 type ViewMode = 'card' | 'table';
 
@@ -23,8 +23,8 @@ const LinkCard: React.FC<{ link: Link }> = ({ link }) => (
             <Button variant="secondary" size="sm">Request Full Access</Button>
         </div>
       ) : (
-        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 text-sm truncate block hover:underline">
-          <ion-icon name="link-outline" class="mr-1 align-middle"></ion-icon>
+        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 text-sm truncate flex items-center hover:underline">
+          <LinkIcon className="w-4 h-4 mr-1" />
           {link.url}
         </a>
       )}
@@ -38,7 +38,7 @@ const LinkCard: React.FC<{ link: Link }> = ({ link }) => (
         <Badge>{link.visibility}</Badge>
       </div>
        <div className="flex flex-wrap gap-1">
-        {link.tags.slice(0, 3).map(tag => <Badge key={tag} color="blue">{tag}</Badge>)}
+        {link.tags.slice(0, 3).map(tag => <Badge key={tag} className="text-blue-600 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30">{tag}</Badge>)}
       </div>
     </div>
   </Card>
@@ -55,7 +55,7 @@ const LinkTableRow: React.FC<{ link: Link }> = ({ link }) => (
                 <Button variant="secondary" size="sm">Request Access</Button>
              ) : (
                 <a href={link.url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="ghost" size="sm"><ion-icon name="open-outline" class="text-lg"></ion-icon></Button>
+                    <Button variant="ghost" size="sm"><ExternalLink className="w-4 h-4" /></Button>
                 </a>
              )}
         </td>
@@ -74,11 +74,11 @@ export const LinkExplorer: React.FC = () => {
           <p className="text-gray-500 dark:text-gray-400 mt-1">Browse, search and filter all links in the repository.</p>
         </div>
          <div className="flex items-center gap-2 bg-gray-200 dark:bg-gray-800 p-1 rounded-lg">
-            <Button variant={viewMode === 'card' ? 'secondary' : 'ghost'} onClick={() => setViewMode('card')}>
-                <ion-icon name="grid-outline" class="text-lg"></ion-icon>
+            <Button variant={viewMode === 'card' ? 'secondary' : 'ghost'} onClick={() => setViewMode('card')} className="p-2">
+                <LayoutGrid className="w-5 h-5" />
             </Button>
-            <Button variant={viewMode === 'table' ? 'secondary' : 'ghost'} onClick={() => setViewMode('table')}>
-                <ion-icon name="list-outline" class="text-lg"></ion-icon>
+            <Button variant={viewMode === 'table' ? 'secondary' : 'ghost'} onClick={() => setViewMode('table')} className="p-2">
+                <List className="w-5 h-5" />
             </Button>
         </div>
       </div>

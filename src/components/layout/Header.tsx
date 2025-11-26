@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
-import { User } from '../types';
-import { Button } from './ui/Button';
+import { User } from '../../types';
+import { Button } from '../ui/Button';
+import { Search, Plus, Moon, Sun, Bell } from 'lucide-react';
 
 interface HeaderProps {
   user: User;
@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onAddLink, theme, toggleTh
         <div className="flex-1 min-w-0">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <ion-icon name="search-outline" class="text-gray-400"></ion-icon>
+              <Search className="h-5 w-5 text-gray-400" />
             </div>
             <input
               type="search"
@@ -33,22 +33,22 @@ export const Header: React.FC<HeaderProps> = ({ user, onAddLink, theme, toggleTh
         {/* Actions & User Menu */}
         <div className="flex items-center ml-4 space-x-2 md:space-x-4">
           <Button onClick={onAddLink} variant="primary" size="md" className="hidden sm:inline-flex">
-            <ion-icon name="add-outline" class="text-xl -ml-1 mr-2"></ion-icon>
+            <Plus className="h-5 w-5 -ml-1 mr-2" />
             Add Link
           </Button>
            <Button onClick={onAddLink} variant="primary" size="md" className="sm:hidden p-2">
-            <ion-icon name="add-outline" class="text-xl"></ion-icon>
+            <Plus className="h-5 w-5" />
           </Button>
           
           <Button onClick={toggleTheme} variant="ghost" size="md" className="p-2">
             {theme === 'light' ? 
-              <ion-icon name="moon-outline" class="text-2xl"></ion-icon> : 
-              <ion-icon name="sunny-outline" class="text-2xl"></ion-icon>
+              <Moon className="h-6 w-6" /> : 
+              <Sun className="h-6 w-6" />
             }
           </Button>
 
           <button className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 focus:ring-indigo-500">
-            <ion-icon name="notifications-outline" class="text-2xl"></ion-icon>
+            <Bell className="h-6 w-6" />
           </button>
 
           <div className="relative">

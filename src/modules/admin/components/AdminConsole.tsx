@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
-import { Card, CardHeader, CardContent } from './ui/Card';
-import { USERS, DEPARTMENTS } from '../constants';
-import { UserRole } from '../types';
-import { Button } from './ui/Button';
+import { Card, CardHeader, CardContent } from '../../../components/ui/Card';
+import { USERS, DEPARTMENTS } from '../../../constants';
+import { UserRole } from '../../../types';
+import { Button } from '../../../components/ui/Button';
 
 type AdminTab = 'Users' | 'Departments' | 'Roles' | 'Settings' | 'Audit';
 

@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
-import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import { Link, LinkStatus, Visibility } from '../../types';
-import { DEPARTMENTS } from '../../constants';
+import { Modal } from '../../../components/ui/Modal';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
+import { Link, LinkStatus, Visibility } from '../../../types';
+import { DEPARTMENTS } from '../../../constants';
 
 interface CreateLinkModalProps {
   isOpen: boolean;
