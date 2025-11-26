@@ -7,7 +7,7 @@ const LARK_API_BASE = 'https://open.larksuite.com/open-apis/';
 const LARK_CONFIG = {
   appId: import.meta.env.VITE_LARK_APP_ID,
   appSecret: import.meta.env.VITE_LARK_APP_SECRET,
-  redirectUri: import.meta.env.VITE_LARK_REDIRECT_URI || 'http://localhost:3000/auth/callback',
+  redirectUri: import.meta.env.VITE_LARK_REDIRECT_URI,
 };
 
 export interface LarkUserInfo {

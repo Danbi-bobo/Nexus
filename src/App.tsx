@@ -8,7 +8,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LarkLogin />} />
-        <Route path="/auth/callback" element={<LarkLogin />} />
+        <Route path="/auth" element={<LarkLogin />} />
         {/* <Route path="/dashboard" element={<Dashboard />} /> */}
       </Routes>
     </BrowserRouter>
