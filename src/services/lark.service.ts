@@ -51,7 +51,7 @@ class LarkService {
    */
   getAuthorizationUrl(state?: string): string {
     const params = new URLSearchParams({
-      app_id: LARK_CONFIG.appId,
+      client_id: LARK_CONFIG.appId,
       redirect_uri: LARK_CONFIG.redirectUri,
       state: state || Math.random().toString(36).substring(7),
     });
