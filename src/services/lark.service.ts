@@ -53,7 +53,7 @@ class LarkService {
     const params = new URLSearchParams({
       client_id: LARK_CONFIG.appId,
       redirect_uri: LARK_CONFIG.redirectUri,
-      state: state || Math.random().toString(36).substring(7),
+      // state: state || Math.random().toString(36).substring(7),
     });
 
     return `https://accounts.larksuite.com/open-apis/authen/v1/authorize?${params.toString()}`;
