@@ -76,9 +76,6 @@ export default function LarkLogin() {
     // Request necessary scopes
     const scopes = [
       "contact:contact.base:readonly",
-      "contact:user.base:readonly",
-      "contact:user.department:readonly",
-      "contact:user.employee:readonly",
       "offline_access",
     ];
     authUrl.searchParams.append("scope", scopes.join(" "));
