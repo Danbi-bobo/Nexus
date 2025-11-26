@@ -71,7 +71,6 @@ export default function LarkLogin() {
     const authUrl = new URL("https://accounts.larksuite.com/open-apis/authen/v1/authorize");
     authUrl.searchParams.append("client_id", LARK_APP_ID);
     authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
-    authUrl.searchParams.append("response_type", "code");
     authUrl.searchParams.append("state", state);
     
     // Request necessary scopes
