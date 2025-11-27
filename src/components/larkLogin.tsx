@@ -58,9 +58,13 @@ export default function LarkLogin() {
         // Supabase session is now created by Edge Function
         // Just store profile ID for quick access
         if (data.profile?.id) {
-          localStorage.setItem("user_profile_id", data.profile.id);
+          localStorage.setItem("user_profile", JSON.stringify({
+            id: data.profile.id,
+            name: data.profile.name,
+            avatarUrl: data.profile.avatar_url,
+            role: data.profile.role ?? "User"
+          }));
         }
-
         // Clear OAuth state
         sessionStorage.removeItem("lark_oauth_state");
 
