@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 
 export interface SyncDepartmentsResult {
     success: boolean;
+    total?: number;
     summary?: {
         total_found: number;
         synced: number;
@@ -20,8 +21,8 @@ class DepartmentSyncService {
         try {
             console.log('Starting department sync...');
 
-            const { data, error } = await supabase.functions.invoke('swift-worker', {
-                body: { name: 'Functions' }
+            const { data, error } = await supabase.functions.invoke('sync_departments', {
+                body: {}
             });
 
             if (error) {
@@ -32,10 +33,10 @@ class DepartmentSyncService {
                 };
             }
 
-            if (!data.success) {
+            if (!data || !data.success) {
                 return {
                     success: false,
-                    error: data.error || 'Department sync failed',
+                    error: data?.error || 'Department sync failed',
                 };
             }
 
