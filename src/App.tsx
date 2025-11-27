@@ -1,8 +1,8 @@
-// App.tsx hoặc router config
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LarkLogin from "./components/larkLogin";
+import LarkLogin from "./components/LarkLogin";
 import { AuthCallback } from "./pages/AuthCallback";
 import { Dashboard } from "./modules/dashboard/components/Dashboard";
+import { MainLayout } from "./components/layout/MainLayout";
 
 function App() {
   return (
@@ -10,7 +10,12 @@ function App() {
       <Routes>
         <Route path="/" element={<LarkLogin />} />
         <Route path="/auth" element={<AuthCallback />} />
-        <Route path="/dashboard" element={<Dashboard onNavigate={() => {}} />} />
+        
+        {/* Protected Routes */}
+        <Route element={<MainLayout />}>
+          <Route path="/dashboard" element={<Dashboard onNavigate={() => {}} />} />
+          <Route path="/explorer" element={<div className="p-8"><h1 className="text-2xl font-bold">Explorer</h1><p>Coming soon...</p></div>} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

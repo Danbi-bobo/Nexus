@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 
 
 const navItems = [
-  { name: 'Dashboard', path: '/', icon: LayoutGrid },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
   { name: 'Explorer', path: '/explorer', icon: Compass },
   { name: 'Analytics', path: '/analytics', icon: BarChart2 },
   { name: 'Admin', path: '/admin', icon: Settings },
