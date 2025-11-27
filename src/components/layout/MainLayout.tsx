@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { AddLinkModal } from '../links/AddLinkModal';
 import { User, UserRole } from '../../types';
 
 // Mock user for now, or get from context/store
@@ -17,16 +18,15 @@ const MOCK_USER: User = {
 
 export const MainLayout: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
-    // In a real app, you'd apply class to html/body here
     document.documentElement.classList.toggle('dark');
   };
 
   const handleAddLink = () => {
-    console.log('Add link clicked');
-    // Open modal logic here
+    setIsAddLinkModalOpen(true);
   };
 
   return (
@@ -45,6 +45,15 @@ export const MainLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      <AddLinkModal
+        isOpen={isAddLinkModalOpen}
+        onClose={() => setIsAddLinkModalOpen(false)}
+        onSuccess={() => {
+          // Optionally refresh data or show notification
+          console.log('Link created successfully!');
+        }}
+      />
     </div>
   );
 };
