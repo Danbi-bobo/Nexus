@@ -133,13 +133,29 @@ class LinkService {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
-        const { data: profile } = await supabase
+        // Get profile ID from localStorage (stored during login)
+        const userProfileData = localStorage.getItem('user_profile');
+        if (!userProfileData) throw new Error('User profile not found in session');
+
+        const userProfile = JSON.parse(userProfileData);
+        const profileId = userProfile.id;
+
+        // Fetch full profile to get department info
+        const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('id, department_id')
-            .eq('lark_user_id', user.id)
+            .eq('id', profileId)
             .single();
 
-        if (!profile) throw new Error('User profile not found');
+        if (profileError || !profile) {
+            console.error('Error fetching profile:', profileError);
+            throw new Error('User profile not found');
+        }
+
+        // User must have a department assigned
+        if (!profile.department_id) {
+            throw new Error('User has no department assigned. Please contact an administrator.');
+        }
 
         const linkData: LinkInsert = {
             title: request.title,
@@ -147,7 +163,7 @@ class LinkService {
             description: request.description,
             notes: request.notes,
             category_id: request.categoryId,
-            department_id: profile.department_id!,
+            department_id: profile.department_id,
             owner_id: profile.id,
             created_by: profile.id,
             visibility: request.visibility ?? 'Department',
