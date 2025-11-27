@@ -21,7 +21,7 @@ class DepartmentSyncService {
             console.log('Starting department sync...');
 
             const { data, error } = await supabase.functions.invoke('sync-departments', {
-                body: {}
+                body: { name: 'Functions' }
             });
 
             if (error) {
