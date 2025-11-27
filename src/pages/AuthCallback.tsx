@@ -62,7 +62,7 @@ export const AuthCallback: React.FC = () => {
 
         // Redirect to dashboard after 1 second
         setTimeout(() => {
-          navigate('/');
+          navigate('/dashboard');
         }, 1000);
 
       } catch (error) {
@@ -76,7 +76,7 @@ export const AuthCallback: React.FC = () => {
 
         // Redirect to login after 3 seconds
         setTimeout(() => {
-          navigate('/login');
+          navigate('/');
         }, 3000);
       }
     };
