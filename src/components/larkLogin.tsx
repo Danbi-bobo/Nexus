@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 const LARK_APP_ID = import.meta.env.VITE_LARK_APP_ID;
-const REDIRECT_URI = `${import.meta.env.VITE_LARK_REDIRECT_URI}`;
-const SUPABASE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL + "/functions/v1/lark-oauth-callback";
+const REDIRECT_URI = import.meta.env.VITE_LARK_REDIRECT_URI;
 
 export default function LarkLogin() {
   const navigate = useNavigate();
@@ -28,23 +28,27 @@ export default function LarkLogin() {
           throw new Error("Invalid state parameter");
         }
 
-        // Call Edge Function to exchange code and save user data
-        const response = await fetch(SUPABASE_FUNCTION_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
-        });
+        // Call Edge Function to exchange code and create session
+        const { data, error: functionError } = await supabase.functions.invoke(
+          "lark-oauth-callback",
+          {
+            body: { code },
+          }
+        );
 
-        const data = await response.json();
+        if (functionError) {
+          throw functionError;
+        }
 
         if (!data.success) {
           throw new Error(data.error || "Failed to authenticate");
         }
 
-        // Store tokens
-        sessionStorage.setItem("lark_access_token", data.tokens.access_token);
-        sessionStorage.setItem("lark_refresh_token", data.tokens.refresh_token);
-        sessionStorage.setItem("user_id", data.user.user_id);
+        // Supabase session is now created by Edge Function
+        // Just store profile ID for quick access
+        if (data.profile?.id) {
+          localStorage.setItem("user_profile_id", data.profile.id);
+        }
 
         // Clear OAuth state
         sessionStorage.removeItem("lark_oauth_state");

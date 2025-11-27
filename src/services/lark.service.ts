@@ -95,18 +95,21 @@ class LarkService {
    */
   async getUserAccessToken(code: string): Promise<LarkTokenResponse> {
     try {
+      // Use URLSearchParams for form-urlencoded format (OAuth 2.0 standard)
+      const params = new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: LARK_CONFIG.appId,
+        client_secret: LARK_CONFIG.appSecret,
+        code,
+        // redirect_uri: LARK_CONFIG.redirectUri,
+      });
+
       const response = await axios.post(
         `${LARK_API_BASE}/authen/v2/oauth/token`,
-        {
-          grant_type: 'authorization_code',
-          client_id: LARK_CONFIG.appId,
-          client_secret: LARK_CONFIG.appSecret,
-          code,
-          redirect_uri: LARK_CONFIG.redirectUri,
-        },
+        params.toString(),
         {
           headers: {
-            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Type': 'application',
           },
         }
       );
