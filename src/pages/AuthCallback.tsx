@@ -14,15 +14,15 @@ export const AuthCallback: React.FC = () => {
         // Get authorization code and state from URL
         const code = searchParams.get('code');
         const state = searchParams.get('state');
-        
+
         console.log('OAuth callback received:', { hasCode: !!code, hasState: !!state });
-        
+
         // Verify state for CSRF protection
         const savedState = sessionStorage.getItem('lark_oauth_state');
         if (!state || state !== savedState) {
           throw new Error('Invalid state parameter - possible CSRF attack');
         }
-        
+
         if (!code) {
           throw new Error('No authorization code received');
         }
@@ -35,7 +35,7 @@ export const AuthCallback: React.FC = () => {
         // Call Edge Function to handle OAuth flow
         console.log('Calling Edge Function with code...');
         const { data, error } = await supabase.functions.invoke('lark-oauth-callback', {
-          body: { 
+          body: {
             code,
             redirectUri: 'https://nexus-ashy-eight.vercel.app/auth'
           },
@@ -57,7 +57,12 @@ export const AuthCallback: React.FC = () => {
 
         // Store profile ID for quick access
         if (data.profile?.id) {
-          localStorage.setItem('user_profile_id', data.profile.id);
+          localStorage.setItem("user_profile", JSON.stringify({
+            id: data.profile.id,
+            name: data.profile.name,
+            avatarUrl: data.profile.avatar_url,
+            role: data.profile.role ?? "User"
+          }));
         }
 
         // Redirect to dashboard after 1 second
@@ -69,8 +74,8 @@ export const AuthCallback: React.FC = () => {
         console.error('Auth callback error:', error);
         setStatus('error');
         setMessage(
-          error instanceof Error 
-            ? `Lỗi: ${error.message}` 
+          error instanceof Error
+            ? `Lỗi: ${error.message}`
             : 'Đã xảy ra lỗi trong quá trình đăng nhập'
         );
 
@@ -122,7 +127,7 @@ export const AuthCallback: React.FC = () => {
             {status === 'success' && 'Thành công!'}
             {status === 'error' && 'Có lỗi xảy ra'}
           </h2>
-          
+
           <p className="text-gray-600 dark:text-gray-400">
             {message}
           </p>

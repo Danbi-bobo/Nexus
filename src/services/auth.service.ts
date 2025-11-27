@@ -60,7 +60,12 @@ class AuthService {
 
       // 3. Auto login after signup
       if (profile) {
-        localStorage.setItem('user_profile_id', profile.id);
+        localStorage.setItem("user_profile", JSON.stringify({
+          id: profile.id,
+          name: profile.name,
+          avatarUrl: profile.avatar_url,
+          role: profile.role ?? "User"
+        }));
       }
 
       return {
@@ -105,8 +110,15 @@ class AuthService {
           .update({ last_login_at: new Date().toISOString() })
           .eq('id', profile.id);
 
-        // Store profile ID in localStorage
-        localStorage.setItem('user_profile_id', profile.id);
+        // Store profiile ID in localStorage
+        if (profile) {
+          localStorage.setItem("user_profile", JSON.stringify({
+            id: profile.id,
+            name: profile.name,
+            avatarUrl: profile.avatar_url,
+            role: profile.role ?? "User"
+          }));
+        }
       }
 
       return {
@@ -133,7 +145,7 @@ class AuthService {
       if (error) throw error;
 
       // Clear local storage
-      localStorage.removeItem('user_profile_id');
+      localStorage.removeItem('user_profile');
 
       return { success: true };
     } catch (error) {
