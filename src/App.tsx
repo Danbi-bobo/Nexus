@@ -3,6 +3,7 @@ import LarkLogin from "./components/larkLogin";
 import { AuthCallback } from "./pages/AuthCallback";
 import { Dashboard } from "./modules/dashboard/components/Dashboard";
 import { Categories } from "./modules/categories/components/Categories";
+import { AdminConsole } from "./modules/admin/components/AdminConsole";
 import { MainLayout } from "./components/layout/MainLayout";
 
 function App() {
@@ -11,12 +12,13 @@ function App() {
       <Routes>
         <Route path="/" element={<LarkLogin />} />
         <Route path="/auth" element={<AuthCallback />} />
-        
+
         {/* Protected Routes */}
         <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<Dashboard onNavigate={() => {}} />} />
+          <Route path="/dashboard" element={<Dashboard onNavigate={() => { }} />} />
           <Route path="/explorer" element={<div className="p-8"><h1 className="text-2xl font-bold">Explorer</h1><p>Coming soon...</p></div>} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/admin" element={<AdminConsole />} />
         </Route>
       </Routes>
     </BrowserRouter>
