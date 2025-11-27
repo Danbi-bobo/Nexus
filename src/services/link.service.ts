@@ -13,22 +13,24 @@ type LinkInsert = Database['public']['Tables']['links']['Insert'];
 type LinkUpdate = Database['public']['Tables']['links']['Update'];
 
 class LinkService {
+
     /**
-     * Get all links with optional filters
+     * Get all links with filters + pagination
      */
     async getLinks(filters?: SearchLinksRequest): Promise<SearchLinksResponse> {
+
         let query = supabase
             .from('links')
             .select(`
-        *,
-        category:categories(*),
-        owner:profiles!links_owner_id_fkey(*),
-        created_by:profiles!links_created_by_fkey(*),
-        department:departments(*),
-        tags:link_tags(tag:tags(*))
-      `, { count: 'exact' });
+                *,
+                category:categories(*),
+                owner:profiles!links_owner_id_fkey(*),
+                created_by:profiles!links_created_by_fkey(*),
+                department:departments(*),
+                tags:link_tags(tag:tags(*))
+            `, { count: 'exact' });
 
-        // Apply filters
+        // ---- Apply filters ----
         if (filters?.query) {
             query = query.textSearch('search_vector', filters.query);
         }
@@ -45,28 +47,10 @@ class LinkService {
             query = query.eq('status', filters.status);
         }
 
-        if (filters?.visibility) {
-            query = query.eq('visibility', filters.visibility);
-        }
+        // ---- Pagination ----
+        const limit = filters?.limit ?? 20;
+        const offset = filters?.offset ?? 0;
 
-        if (filters?.tagIds && filters.tagIds.length > 0) {
-            // Filter by tags using inner join
-            query = query.in('id',
-                supabase
-                    .from('link_tags')
-                    .select('link_id')
-                    .in('tag_id', filters.tagIds)
-            );
-        }
-
-        // Sorting
-        const sortBy = filters?.sortBy || 'created_at';
-        const sortOrder = filters?.sortOrder || 'desc';
-        query = query.order(sortBy, { ascending: sortOrder === 'asc' });
-
-        // Pagination
-        const limit = filters?.limit || 20;
-        const offset = filters?.offset || 0;
         query = query.range(offset, offset + limit - 1);
 
         const { data, error, count } = await query;
@@ -76,16 +60,16 @@ class LinkService {
             throw error;
         }
 
-        // Transform database rows to domain models
         const links = (data || []).map(this.transformLinkRow);
 
         return {
             links,
-            total: count || 0,
+            total: count ?? 0,
             limit,
             offset,
         };
     }
+
 
     /**
      * Get a single link by ID
@@ -94,13 +78,13 @@ class LinkService {
         const { data, error } = await supabase
             .from('links')
             .select(`
-        *,
-        category:categories(*),
-        owner:profiles!links_owner_id_fkey(*),
-        created_by:profiles!links_created_by_fkey(*),
-        department:departments(*),
-        tags:link_tags(tag:tags(*))
-      `)
+                *,
+                category:categories(*),
+                owner:profiles!links_owner_id_fkey(*),
+                created_by:profiles!links_created_by_fkey(*),
+                department:departments(*),
+                tags:link_tags(tag:tags(*))
+            `)
             .eq('id', id)
             .single();
 
@@ -114,6 +98,7 @@ class LinkService {
         return this.transformLinkRow(data);
     }
 
+
     /**
      * Get link by short code
      */
@@ -121,13 +106,13 @@ class LinkService {
         const { data, error } = await supabase
             .from('links')
             .select(`
-        *,
-        category:categories(*),
-        owner:profiles!links_owner_id_fkey(*),
-        created_by:profiles!links_created_by_fkey(*),
-        department:departments(*),
-        tags:link_tags(tag:tags(*))
-      `)
+                *,
+                category:categories(*),
+                owner:profiles!links_owner_id_fkey(*),
+                created_by:profiles!links_created_by_fkey(*),
+                department:departments(*),
+                tags:link_tags(tag:tags(*))
+            `)
             .eq('short_code', shortCode)
             .single();
 
@@ -136,20 +121,18 @@ class LinkService {
             return null;
         }
 
-        if (!data) return null;
-
-        return this.transformLinkRow(data);
+        return data ? this.transformLinkRow(data) : null;
     }
+
 
     /**
      * Create a new link
      */
     async createLink(request: CreateLinkRequest): Promise<Link> {
-        // Get current user
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
-        // Get user profile
         const { data: profile } = await supabase
             .from('profiles')
             .select('id, department_id')
@@ -158,7 +141,6 @@ class LinkService {
 
         if (!profile) throw new Error('User profile not found');
 
-        // Prepare link data
         const linkData: LinkInsert = {
             title: request.title,
             url: request.url,
@@ -168,11 +150,10 @@ class LinkService {
             department_id: profile.department_id!,
             owner_id: profile.id,
             created_by: profile.id,
-            visibility: request.visibility || 'Department',
-            metadata: request.metadata || {},
+            visibility: request.visibility ?? 'Department',
+            metadata: request.metadata ?? {},
         };
 
-        // Insert link
         const { data: link, error: linkError } = await supabase
             .from('links')
             .insert(linkData)
@@ -184,8 +165,8 @@ class LinkService {
             throw linkError;
         }
 
-        // Add tags if provided
-        if (request.tagIds && request.tagIds.length > 0) {
+        // Add tags
+        if (request.tagIds?.length) {
             const tagLinks = request.tagIds.map(tagId => ({
                 link_id: link.id,
                 tag_id: tagId,
@@ -195,19 +176,18 @@ class LinkService {
                 .from('link_tags')
                 .insert(tagLinks);
 
-            if (tagError) {
-                console.error('Error adding tags:', tagError);
-            }
+            if (tagError) console.error('Error adding tags:', tagError);
         }
 
-        // Fetch complete link with relations
         return this.getLink(link.id) as Promise<Link>;
     }
 
+
     /**
-     * Update a link
+     * Update link
      */
     async updateLink(id: string, request: UpdateLinkRequest): Promise<Link> {
+
         const linkData: LinkUpdate = {
             title: request.title,
             url: request.url,
@@ -229,33 +209,26 @@ class LinkService {
             throw error;
         }
 
-        // Update tags if provided
+        // Update tags
         if (request.tagIds !== undefined) {
-            // Remove existing tags
-            await supabase
-                .from('link_tags')
-                .delete()
-                .eq('link_id', id);
+            await supabase.from('link_tags').delete().eq('link_id', id);
 
-            // Add new tags
             if (request.tagIds.length > 0) {
                 const tagLinks = request.tagIds.map(tagId => ({
                     link_id: id,
                     tag_id: tagId,
                 }));
 
-                await supabase
-                    .from('link_tags')
-                    .insert(tagLinks);
+                await supabase.from('link_tags').insert(tagLinks);
             }
         }
 
-        // Fetch updated link
         return this.getLink(id) as Promise<Link>;
     }
 
+
     /**
-     * Delete a link
+     * Delete link
      */
     async deleteLink(id: string): Promise<void> {
         const { error } = await supabase
@@ -268,6 +241,7 @@ class LinkService {
             throw error;
         }
     }
+
 
     /**
      * Increment click count
@@ -283,20 +257,21 @@ class LinkService {
         }
     }
 
+
     /**
      * Get recent links
      */
-    async getRecentLinks(limit: number = 10): Promise<Link[]> {
+    async getRecentLinks(limit = 10): Promise<Link[]> {
         const { data, error } = await supabase
             .from('links')
             .select(`
-        *,
-        category:categories(*),
-        owner:profiles!links_owner_id_fkey(*),
-        created_by:profiles!links_created_by_fkey(*),
-        department:departments(*),
-        tags:link_tags(tag:tags(*))
-      `)
+                *,
+                category:categories(*),
+                owner:profiles!links_owner_id_fkey(*),
+                created_by:profiles!links_created_by_fkey(*),
+                department:departments(*),
+                tags:link_tags(tag:tags(*))
+            `)
             .eq('status', 'Active')
             .order('created_at', { ascending: false })
             .limit(limit);
@@ -309,20 +284,21 @@ class LinkService {
         return (data || []).map(this.transformLinkRow);
     }
 
+
     /**
      * Get popular links
      */
-    async getPopularLinks(limit: number = 10): Promise<Link[]> {
+    async getPopularLinks(limit = 10): Promise<Link[]> {
         const { data, error } = await supabase
             .from('links')
             .select(`
-        *,
-        category:categories(*),
-        owner:profiles!links_owner_id_fkey(*),
-        created_by:profiles!links_created_by_fkey(*),
-        department:departments(*),
-        tags:link_tags(tag:tags(*))
-      `)
+                *,
+                category:categories(*),
+                owner:profiles!links_owner_id_fkey(*),
+                created_by:profiles!links_created_by_fkey(*),
+                department:departments(*),
+                tags:link_tags(tag:tags(*))
+            `)
             .eq('status', 'Active')
             .order('click_count', { ascending: false })
             .limit(limit);
@@ -335,8 +311,9 @@ class LinkService {
         return (data || []).map(this.transformLinkRow);
     }
 
+
     /**
-     * Transform database row to domain model
+     * Transform row to domain model
      */
     private transformLinkRow(row: any): Link {
         return {
@@ -347,23 +324,31 @@ class LinkService {
             notes: row.notes,
             shortCode: row.short_code,
             qrCodeUrl: row.qr_code_url,
-            category: row.category,
+
             categoryId: row.category_id,
-            department: row.department,
+            category: row.category,
+
             departmentId: row.department_id,
-            owner: row.owner,
+            department: row.department,
+
             ownerId: row.owner_id,
-            createdBy: row.created_by,
+            owner: row.owner,
+
             createdById: row.created_by,
-            tags: row.tags?.map((lt: any) => lt.tag) || [],
+            createdBy: row.created_by,
+
+            tags: row.tags?.map((x: any) => x.tag) ?? [],
+
             visibility: row.visibility,
             status: row.status,
             metadata: row.metadata,
             source: row.source,
             language: row.language,
+
             clickCount: row.click_count,
             viewCount: row.view_count,
             lastAccessedAt: row.last_accessed_at,
+
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         };
