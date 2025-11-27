@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '../../../components/ui/Card';
 import { USERS, DEPARTMENTS } from '../../../constants';
 import { UserRole } from '../../../types';
 import { Button } from '../../../components/ui/Button';
 import { DepartmentSyncButton } from '../../dashboard/components/DepartmentSyncButton';
+import { departmentSyncService } from '../../../services/department-sync.service';
 
 type AdminTab = 'Users' | 'Departments' | 'Roles' | 'Settings' | 'Audit';
 
@@ -30,6 +31,26 @@ const AdminTable: React.FC<{ headers: string[]; data: (string | React.ReactNode)
 
 export const AdminConsole: React.FC = () => {
     const [activeTab, setActiveTab] = useState<AdminTab>('Users');
+    const [departments, setDepartments] = useState<any[]>([]);
+    const [isLoadingDepts, setIsLoadingDepts] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === 'Departments') {
+            loadDepartments();
+        }
+    }, [activeTab]);
+
+    const loadDepartments = async () => {
+        setIsLoadingDepts(true);
+        try {
+            const data = await departmentSyncService.getDepartments();
+            setDepartments(data || []);
+        } catch (error) {
+            console.error('Error loading departments:', error);
+        } finally {
+            setIsLoadingDepts(false);
+        }
+    };
 
     const renderContent = () => {
         switch (activeTab) {
@@ -38,18 +59,23 @@ export const AdminConsole: React.FC = () => {
             case 'Departments':
                 return (
                     <div className="p-6 space-y-6">
-                        {/* Sync Button - Đặt trên cùng */}
-                        <DepartmentSyncButton />
-
-                        {/* Department Table */}
+                        <DepartmentSyncButton onSyncComplete={loadDepartments} />
                         <div>
                             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                                Danh sách phòng ban
+                                Department List
                             </h3>
-                            <AdminTable
-                                headers={['ID', 'Name']}
-                                data={DEPARTMENTS.map(d => [d.id, d.name])}
-                            />
+                            {isLoadingDepts ? (
+                                <p className="text-gray-500 dark:text-gray-400">Loading departments...</p>
+                            ) : departments.length > 0 ? (
+                                <AdminTable
+                                    headers={['Department ID', 'Name', 'Parent ID']}
+                                    data={departments.map(d => [d.lark_department_id || '', d.name || '', d.parent_id || 'Root'])}
+                                />
+                            ) : (
+                                <p className="text-gray-500 dark:text-gray-400">
+                                    No departments found. Click "Sync Departments" to fetch from Lark.
+                                </p>
+                            )}
                         </div>
                     </div>
                 );
@@ -59,9 +85,10 @@ export const AdminConsole: React.FC = () => {
                 return <p className="text-gray-500 dark:text-gray-400 p-4">Audit log viewer would be here.</p>;
             case 'Settings':
                 return <p className="text-gray-500 dark:text-gray-400 p-4">System settings configuration would be here.</p>;
-            default: return null;
+            default:
+                return null;
         }
-    }
+    };
 
     return (
         <div className="space-y-6">
@@ -89,5 +116,5 @@ export const AdminConsole: React.FC = () => {
                 </CardContent>
             </Card>
         </div>
-    )
-}
+    );
+};
