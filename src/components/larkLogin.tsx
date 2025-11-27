@@ -20,7 +20,7 @@ export default function LarkLogin() {
       if (!code) return;
 
       setLoading(true);
-      
+
       try {
         // Verify state to prevent CSRF
         const savedState = sessionStorage.getItem("lark_oauth_state");
@@ -32,10 +32,10 @@ export default function LarkLogin() {
         const { data, error: functionError } = await supabase.functions.invoke(
           "lark-oauth-callback",
           {
-            body: { 
-                code,
-                redirectUri: 'https://nexus-ashy-eight.vercel.app/auth'
-             },
+            body: {
+              code,
+              redirectUri: 'https://nexus-ashy-eight.vercel.app/auth'
+            },
           }
         );
 
@@ -45,6 +45,14 @@ export default function LarkLogin() {
 
         if (!data.success) {
           throw new Error(data.error || "Failed to authenticate");
+        }
+
+        // 🔥 SET SUPABASE SESSION  <--- BẠN ĐANG BỎ QUA ĐOẠN NÀY
+        if (data.access_token && data.refresh_token) {
+          await supabase.auth.setSession({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+          });
         }
 
         // Supabase session is now created by Edge Function
@@ -79,7 +87,7 @@ export default function LarkLogin() {
     authUrl.searchParams.append("client_id", LARK_APP_ID);
     authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
     authUrl.searchParams.append("state", state);
-    
+
     // Request necessary scopes
     const scopes = [
       "contact:contact.base:readonly",
@@ -126,7 +134,7 @@ export default function LarkLogin() {
           className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
           </svg>
           Đăng nhập bằng Lark
         </button>

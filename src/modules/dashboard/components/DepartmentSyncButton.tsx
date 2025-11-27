@@ -19,12 +19,16 @@ export const DepartmentSyncButton: React.FC<DepartmentSyncButtonProps> = ({ onSy
             const response = await departmentSyncService.syncDepartments();
 
             if (response.success) {
-                setResult(
-                    `✓ Sync thành công!\n` +
-                    `- Tìm thấy: ${response.summary?.total_found} phòng ban\n` +
-                    `- Đã sync: ${response.summary?.synced}\n` +
-                    `- Lỗi: ${response.summary?.errors}`
-                );
+                if (response.summary) {
+                    setResult(
+                        `✓ Sync thành công!\n` +
+                        `- Tìm thấy: ${response.summary.total_found} phòng ban\n` +
+                        `- Đã sync: ${response.summary.synced}\n` +
+                        `- Lỗi: ${response.summary.errors}`
+                    );
+                } else {
+                    setResult(`✓ Sync thành công! Tổng cộng: ${response.total || 0} phòng ban.`);
+                }
                 onSyncComplete?.(); // Refresh department list
             } else {
                 setError(response.error || 'Sync thất bại');

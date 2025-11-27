@@ -42,8 +42,10 @@ export const AdminConsole: React.FC = () => {
 
     const loadDepartments = async () => {
         setIsLoadingDepts(true);
+        console.log('AdminConsole: Loading departments...');
         try {
             const data = await departmentSyncService.getDepartments();
+            console.log('AdminConsole: Received departments:', data);
             setDepartments(data || []);
         } catch (error) {
             console.error('Error loading departments:', error);
@@ -69,7 +71,7 @@ export const AdminConsole: React.FC = () => {
                             ) : departments.length > 0 ? (
                                 <AdminTable
                                     headers={['Department ID', 'Name', 'Parent ID']}
-                                    data={departments.map(d => [d.lark_department_id || '', d.name || '', d.parent_id || 'Root'])}
+                                    data={departments.map(d => [d.lark_department_id || '', d.name || '', d.lark_parent_department_id || '-'])}
                                 />
                             ) : (
                                 <p className="text-gray-500 dark:text-gray-400">

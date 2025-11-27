@@ -22,7 +22,7 @@ class DepartmentSyncService {
             console.log('Starting department sync...');
 
             const { data, error } = await supabase.functions.invoke('sync_departments', {
-                body: { "name": "Functions" }
+                body: {}
             });
 
             if (error) {
@@ -56,10 +56,16 @@ class DepartmentSyncService {
      * Get all departments from database
      */
     async getDepartments() {
+        // Check session
+        const { data: sessionData } = await supabase.auth.getSession();
+        console.log('Current Session:', sessionData.session);
+
         const { data, error } = await supabase
             .from('departments')
             .select('*')
             .order('name');
+
+        console.log('getDepartments result:', { data, error });
 
         if (error) {
             console.error('Error fetching departments:', error);
