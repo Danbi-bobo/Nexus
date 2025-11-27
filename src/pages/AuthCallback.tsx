@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { syncService } from '../services/sync.service';
+import { supabase } from '../lib/supabase';
 
 export const AuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -15,10 +15,12 @@ export const AuthCallback: React.FC = () => {
         const code = searchParams.get('code');
         const state = searchParams.get('state');
         
+        console.log('OAuth callback received:', { hasCode: !!code, hasState: !!state });
+        
         // Verify state for CSRF protection
         const savedState = sessionStorage.getItem('lark_oauth_state');
         if (!state || state !== savedState) {
-          throw new Error('Invalid state parameter');
+          throw new Error('Invalid state parameter - possible CSRF attack');
         }
         
         if (!code) {
@@ -28,21 +30,31 @@ export const AuthCallback: React.FC = () => {
         // Clear saved state
         sessionStorage.removeItem('lark_oauth_state');
 
-        setMessage('Đang đồng bộ dữ liệu từ Lark...');
+        setMessage('Đang xác thực với Lark...');
 
-        // Sync user data from Lark to Supabase
-        const result = await syncService.syncUserData(code);
+        // Call Edge Function to handle OAuth flow
+        console.log('Calling Edge Function with code...');
+        const { data, error } = await supabase.functions.invoke('lark-oauth-callback', {
+          body: { code },
+        });
 
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to sync user data');
+        if (error) {
+          console.error('Edge Function error:', error);
+          throw error;
         }
 
-        setMessage('Đồng bộ thành công! Đang chuyển hướng...');
+        console.log('Edge Function response:', { success: data?.success });
+
+        if (!data.success) {
+          throw new Error(data.error || 'Authentication failed');
+        }
+
+        setMessage('Đăng nhập thành công! Đang chuyển hướng...');
         setStatus('success');
 
-        // Store user session
-        if (result.profileId) {
-          localStorage.setItem('user_profile_id', result.profileId);
+        // Store profile ID for quick access
+        if (data.profile?.id) {
+          localStorage.setItem('user_profile_id', data.profile.id);
         }
 
         // Redirect to dashboard after 1 second
@@ -107,6 +119,7 @@ export const AuthCallback: React.FC = () => {
             {status === 'success' && 'Thành công!'}
             {status === 'error' && 'Có lỗi xảy ra'}
           </h2>
+          
           <p className="text-gray-600 dark:text-gray-400">
             {message}
           </p>
