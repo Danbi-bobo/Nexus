@@ -16,7 +16,7 @@ class SyncService {
     try {
       // Call Edge Function - it handles everything server-side
       const { data, error } = await supabase.functions.invoke('lark-oauth-callback', {
-        body: { code },
+        body: { code, redirectUri: 'https://nexus-ashy-eight.vercel.app/auth' },
       });
 
       if (error) {

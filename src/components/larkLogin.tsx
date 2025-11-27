@@ -32,7 +32,10 @@ export default function LarkLogin() {
         const { data, error: functionError } = await supabase.functions.invoke(
           "lark-oauth-callback",
           {
-            body: { code },
+            body: { 
+                code,
+                redirectUri: 'https://nexus-ashy-eight.vercel.app/auth'
+             },
           }
         );
 
