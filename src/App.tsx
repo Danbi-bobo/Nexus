@@ -1,6 +1,6 @@
 // App.tsx hoặc router config
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LarkLogin from "./components/larkLogin";
+import LarkLogin from "./components/LarkLogin";
 import { AuthCallback } from "./pages/AuthCallback";
 import { Dashboard } from "./modules/dashboard/components/Dashboard";
 
