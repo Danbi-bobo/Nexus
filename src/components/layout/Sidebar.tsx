@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutGrid, Compass, BarChart2, Settings, Link as LinkIcon, HelpCircle } from 'lucide-react';
+import { LayoutGrid, Compass, BarChart2, Settings, Link as LinkIcon, HelpCircle, Folder } from 'lucide-react';
 import { clsx } from 'clsx';
 
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
   { name: 'Explorer', path: '/explorer', icon: Compass },
+  { name: 'Categories', path: '/categories', icon: Folder },
   { name: 'Analytics', path: '/analytics', icon: BarChart2 },
   { name: 'Admin', path: '/admin', icon: Settings },
 ];
