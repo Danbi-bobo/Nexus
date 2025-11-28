@@ -116,20 +116,17 @@ class CategoryService {
      * Create a new category
      */
     async createCategory(request: CreateCategoryRequest): Promise<Category> {
-        // Get current user's department if not provided
-        let departmentId = request.departmentId;
+        // Get current user from localStorage (Lark SSO)
+        const userProfileStr = localStorage.getItem('userProfile');
+        if (!userProfileStr) {
+            throw new Error('User not authenticated');
+        }
+
+        const userProfile = JSON.parse(userProfileStr);
+        const departmentId = userProfile.department_id;
 
         if (!departmentId) {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('User not authenticated');
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('department_id')
-                .eq('lark_user_id', user.id)
-                .single();
-
-            departmentId = profile?.department_id;
+            throw new Error('User department not found');
         }
 
         const categoryData: CategoryInsert = {
