@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
 // User profile interface
 export interface UserProfile {
@@ -21,9 +23,8 @@ interface AuthState {
 
 // Auth context interface
 interface AuthContextType extends AuthState {
-    login: (profile: UserProfile) => void;
-    logout: () => void;
-    updateProfile: (profile: Partial<UserProfile>) => void;
+    logout: () => Promise<void>;
+    refreshProfile: () => Promise<void>;
 }
 
 // Create context
@@ -42,19 +43,85 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         user: null,
     });
 
-    // Restore session from localStorage on mount
+    // Fetch user profile from database
+    const fetchUserProfile = async (authUser: User): Promise<void> => {
+        try {
+            // Fetch profile from database
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', authUser.id)
+                .single();
+
+            if (profileError) {
+                console.error('Profile fetch error:', profileError);
+                throw profileError;
+            }
+
+            // If user has department_id (Lark ID),lookup the department UUID
+            let departmentUuid: string | undefined;
+            let departmentName: string | undefined;
+
+            if (profile.department_id) {
+                const { data: dept } = await supabase
+                    .from('departments')
+                    .select('id, name')
+                    .eq('open_department_id', profile.department_id)
+                    .single();
+
+                if (dept) {
+                    departmentUuid = dept.id;
+                    departmentName = dept.name;
+                }
+            }
+
+            // Update auth state with profile
+            setAuthState({
+                isAuthenticated: true,
+                isLoading: false,
+                user: {
+                    id: profile.id,
+                    name: profile.name,
+                    email: profile.email || authUser.email,
+                    avatarUrl: profile.avatar_url || undefined,
+                    role: 'User', // TODO: Get from profile or determine based on permissions
+                    departmentId: departmentUuid,
+                    departmentName: departmentName,
+                    jobTitle: profile.job_title || undefined,
+                },
+            });
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            setAuthState({
+                isAuthenticated: false,
+                isLoading: false,
+                user: null,
+            });
+        }
+    };
+
+    // Initialize auth state and listen for changes
     useEffect(() => {
-        const restoreSession = () => {
-            try {
-                const userProfileData = localStorage.getItem('user_profile');
-                if (userProfileData) {
-                    const user = JSON.parse(userProfileData) as UserProfile;
-                    setAuthState({
-                        isAuthenticated: true,
-                        isLoading: false,
-                        user,
-                    });
-                    console.log('Session restored:', user);
+        // Get initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                fetchUserProfile(session.user);
+            } else {
+                setAuthState({
+                    isAuthenticated: false,
+                    isLoading: false,
+                    user: null,
+                });
+            }
+        });
+
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                console.log('Auth state change:', event);
+
+                if (session?.user) {
+                    await fetchUserProfile(session.user);
                 } else {
                     setAuthState({
                         isAuthenticated: false,
@@ -62,33 +129,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         user: null,
                     });
                 }
-            } catch (error) {
-                console.error('Error restoring session:', error);
-                setAuthState({
-                    isAuthenticated: false,
-                    isLoading: false,
-                    user: null,
-                });
             }
-        };
+        );
 
-        restoreSession();
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
-    // Login method
-    const login = (profile: UserProfile) => {
-        localStorage.setItem('user_profile', JSON.stringify(profile));
-        setAuthState({
-            isAuthenticated: true,
-            isLoading: false,
-            user: profile,
-        });
-        console.log('User logged in:', profile);
-    };
-
     // Logout method
-    const logout = () => {
-        localStorage.removeItem('user_profile');
+    const logout = async () => {
+        await supabase.auth.signOut();
         setAuthState({
             isAuthenticated: false,
             isLoading: false,
@@ -97,24 +148,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('User logged out');
     };
 
-    // Update profile method
-    const updateProfile = (profileUpdate: Partial<UserProfile>) => {
-        if (authState.user) {
-            const updatedUser = { ...authState.user, ...profileUpdate };
-            localStorage.setItem('user_profile', JSON.stringify(updatedUser));
-            setAuthState({
-                ...authState,
-                user: updatedUser,
-            });
-            console.log('Profile updated:', updatedUser);
+    // Refresh profile method
+    const refreshProfile = async () => {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+            await fetchUserProfile(authUser);
         }
     };
 
     const value: AuthContextType = {
         ...authState,
-        login,
         logout,
-        updateProfile,
+        refreshProfile,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -116,17 +116,15 @@ class CategoryService {
      * Create a new category
      */
     async createCategory(request: CreateCategoryRequest): Promise<Category> {
-        // Get current user from localStorage (Lark SSO)
-        const userProfileStr = localStorage.getItem('user_profile');
-        if (!userProfileStr) {
-            throw new Error('User not authenticated');
-        }
+        // Get current user and profile from Supabase Auth
+        const { getCurrentUserProfile } = await import('../utils/auth.utils');
+        const profile = await getCurrentUserProfile();
 
-        const userProfile = JSON.parse(userProfileStr);
-        const departmentId = userProfile.departmentId;
+        const departmentId = profile.departmentId;
 
-        if (!departmentId) {
-            throw new Error('User department not found');
+        // Check if department is required based on visibility
+        if (request.visibility === 'Department' && !departmentId) {
+            throw new Error('Department visibility requires department assignment. Use Public or Private visibility instead.');
         }
 
         const categoryData: CategoryInsert = {
@@ -136,8 +134,8 @@ class CategoryService {
             icon: request.icon,
             color: request.color,
             parent_id: request.parentId,
-            department_id: departmentId,
-            visibility: request.visibility || 'Department',
+            department_id: departmentId || null,
+            visibility: request.visibility || 'Public',
             sort_order: request.sortOrder || 0,
         };
 

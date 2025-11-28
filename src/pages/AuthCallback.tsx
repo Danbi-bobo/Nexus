@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
 
 export const AuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Đang xử lý đăng nhập...');
 
@@ -49,22 +47,25 @@ export const AuthCallback: React.FC = () => {
           throw new Error(data.error || 'Authentication failed');
         }
 
+        // Set Supabase Auth session with tokens from Edge Function
+        if (data.access_token && data.refresh_token) {
+          setMessage('Đang thiết lập phiên đăng nhập...');
+
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+          });
+
+          if (sessionError) {
+            console.error('Session setup error:', sessionError);
+            throw new Error('Failed to establish session');
+          }
+
+          console.log('Session established successfully');
+        }
+
         setMessage('Đăng nhập thành công! Đang chuyển hướng...');
         setStatus('success');
-
-        // Use auth context to save session
-        if (data.profile?.id) {
-          login({
-            id: data.profile.id,
-            name: data.profile.name,
-            avatarUrl: data.profile.avatar_url,
-            role: data.profile.role ?? "User",
-            email: data.profile.email,
-            departmentId: data.profile.department_id,
-            departmentName: data.profile.department_name,
-            jobTitle: data.profile.job_title,
-          });
-        }
 
         setTimeout(() => {
           navigate('/dashboard');
@@ -86,7 +87,7 @@ export const AuthCallback: React.FC = () => {
     };
 
     handleCallback();
-  }, [searchParams, navigate, login]);
+  }, [searchParams, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
