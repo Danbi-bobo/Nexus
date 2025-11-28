@@ -117,13 +117,13 @@ class CategoryService {
      */
     async createCategory(request: CreateCategoryRequest): Promise<Category> {
         // Get current user from localStorage (Lark SSO)
-        const userProfileStr = localStorage.getItem('userProfile');
+        const userProfileStr = localStorage.getItem('user_profile');
         if (!userProfileStr) {
             throw new Error('User not authenticated');
         }
 
         const userProfile = JSON.parse(userProfileStr);
-        const departmentId = userProfile.department_id;
+        const departmentId = userProfile.departmentId;
 
         if (!departmentId) {
             throw new Error('User department not found');
