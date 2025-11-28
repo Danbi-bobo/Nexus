@@ -1,71 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { User } from '../../types';
+import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Search, Plus, Moon, Sun, Bell } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface HeaderProps {
-  user?: User;
   onAddLink: () => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
 }
 
-interface ProfileData {
-  id: string;
-  full_name: string;
-  avatar_url: string | null;
-  job_title: string | null;
-  role: string;
-}
-
-export const Header: React.FC<HeaderProps> = ({ user: initialUser, onAddLink, theme, toggleTheme }) => {
+export const Header: React.FC<HeaderProps> = ({ onAddLink, theme, toggleTheme }) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-
-  // Fetch profile data from Supabase
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        // Get current session
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session) {
-          console.log('No active session');
-          return;
-        }
-
-        // Get profile ID from localStorage (set during login)
-        const profileId = localStorage.getItem('user_profile_id');
-
-        if (!profileId) {
-          console.log('No profile ID found');
-          return;
-        }
-
-        // Fetch profile data
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, avatar_url, job_title, role')
-          .eq('id', profileId)
-          .single();
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-          return;
-        }
-
-        if (data) {
-          setProfile(data);
-          console.log('Profile loaded:', data);
-        }
-      } catch (error) {
-        console.error('Error in fetchProfile:', error);
-      }
-    };
-
-    fetchProfile();
-  }, []);
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <header className="flex-shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
@@ -97,17 +43,17 @@ export const Header: React.FC<HeaderProps> = ({ user: initialUser, onAddLink, th
             <Bell className="h-6 w-6" />
           </button>
 
-          {profile && (
+          {isAuthenticated && user && (
             <div className="relative">
               <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center space-x-2">
                 <img
                   className="h-9 w-9 rounded-full object-cover"
-                  src={profile.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.full_name)}
+                  src={user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)}
                   alt="User avatar"
                 />
                 <div className="hidden md:flex flex-col items-start">
-                  <span className="text-sm font-medium dark:text-white">{profile.full_name}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{profile.job_title || profile.role}</span>
+                  <span className="text-sm font-medium dark:text-white">{user.name}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{user.jobTitle || user.role}</span>
                 </div>
               </button>
 

@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 export const AuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Đang xử lý đăng nhập...');
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get authorization code and state from URL
         const code = searchParams.get('code');
         const state = searchParams.get('state');
 
         console.log('OAuth callback received:', { hasCode: !!code, hasState: !!state });
 
-        // Verify state for CSRF protection
         const savedState = sessionStorage.getItem('lark_oauth_state');
         if (!state || state !== savedState) {
           throw new Error('Invalid state parameter - possible CSRF attack');
@@ -27,12 +27,9 @@ export const AuthCallback: React.FC = () => {
           throw new Error('No authorization code received');
         }
 
-        // Clear saved state
         sessionStorage.removeItem('lark_oauth_state');
-
         setMessage('Đang xác thực với Lark...');
 
-        // Call Edge Function to handle OAuth flow
         console.log('Calling Edge Function with code...');
         const { data, error } = await supabase.functions.invoke('lark-oauth-callback', {
           body: {
@@ -55,17 +52,20 @@ export const AuthCallback: React.FC = () => {
         setMessage('Đăng nhập thành công! Đang chuyển hướng...');
         setStatus('success');
 
-        // Store profile ID for quick access
+        // Use auth context to save session
         if (data.profile?.id) {
-          localStorage.setItem("user_profile", JSON.stringify({
+          login({
             id: data.profile.id,
             name: data.profile.name,
             avatarUrl: data.profile.avatar_url,
-            role: data.profile.role ?? "User"
-          }));
+            role: data.profile.role ?? "User",
+            email: data.profile.email,
+            departmentId: data.profile.department_id,
+            departmentName: data.profile.department_name,
+            jobTitle: data.profile.job_title,
+          });
         }
 
-        // Redirect to dashboard after 1 second
         setTimeout(() => {
           navigate('/dashboard');
         }, 1000);
@@ -79,7 +79,6 @@ export const AuthCallback: React.FC = () => {
             : 'Đã xảy ra lỗi trong quá trình đăng nhập'
         );
 
-        // Redirect to login after 3 seconds
         setTimeout(() => {
           navigate('/');
         }, 3000);
@@ -87,13 +86,12 @@ export const AuthCallback: React.FC = () => {
     };
 
     handleCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, login]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-12 max-w-md w-full mx-4">
         <div className="text-center">
-          {/* Loading Spinner */}
           {status === 'loading' && (
             <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 dark:bg-indigo-900 rounded-full mb-6">
               <svg className="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -103,7 +101,6 @@ export const AuthCallback: React.FC = () => {
             </div>
           )}
 
-          {/* Success Icon */}
           {status === 'success' && (
             <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full mb-6">
               <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,7 +109,6 @@ export const AuthCallback: React.FC = () => {
             </div>
           )}
 
-          {/* Error Icon */}
           {status === 'error' && (
             <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 dark:bg-red-900 rounded-full mb-6">
               <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +117,6 @@ export const AuthCallback: React.FC = () => {
             </div>
           )}
 
-          {/* Message */}
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {status === 'loading' && 'Đang xử lý...'}
             {status === 'success' && 'Thành công!'}

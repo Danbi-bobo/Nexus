@@ -130,12 +130,9 @@ class LinkService {
      */
     async createLink(request: CreateLinkRequest): Promise<Link> {
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('User not authenticated');
-
-        // Get profile ID from localStorage (stored during login)
+        // Get profile ID from localStorage (stored during Lark login)
         const userProfileData = localStorage.getItem('user_profile');
-        if (!userProfileData) throw new Error('User profile not found in session');
+        if (!userProfileData) throw new Error('User not authenticated. Please log in.');
 
         const userProfile = JSON.parse(userProfileData);
         const profileId = userProfile.id;
