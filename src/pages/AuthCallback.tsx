@@ -41,15 +41,20 @@ export const AuthCallback: React.FC = () => {
           throw error;
         }
 
-        console.log('Edge Function response:', { success: data?.success });
+        console.log('✅ Edge Function response (full):', data);
+        console.log('Response success:', data?.success);
+        console.log('Has access_token:', !!data?.access_token);
+        console.log('Has refresh_token:', !!data?.refresh_token);
 
-        if (!data.success) {
-          throw new Error(data.error || 'Authentication failed');
+        if (!data?.success) {
+          console.error('❌ Edge Function failed:', data?.error);
+          throw new Error(data?.error || 'Authentication failed');
         }
 
         // Set Supabase Auth session with tokens from Edge Function
         if (data.access_token && data.refresh_token) {
           setMessage('Đang thiết lập phiên đăng nhập...');
+          console.log('🔐 Setting session with tokens...');
 
           const { error: sessionError } = await supabase.auth.setSession({
             access_token: data.access_token,
@@ -57,22 +62,26 @@ export const AuthCallback: React.FC = () => {
           });
 
           if (sessionError) {
-            console.error('Session setup error:', sessionError);
+            console.error('❌ Session setup error:', sessionError);
             throw new Error('Failed to establish session');
           }
 
-          console.log('Session established successfully');
+          console.log('✅ Session established successfully');
+        } else {
+          console.warn('⚠️ No tokens received from Edge Function');
         }
 
+        console.log('🎉 Setting success status and redirecting...');
         setMessage('Đăng nhập thành công! Đang chuyển hướng...');
         setStatus('success');
 
         setTimeout(() => {
+          console.log('🔄 Navigating to dashboard...');
           navigate('/dashboard');
         }, 1000);
 
       } catch (error) {
-        console.error('Auth callback error:', error);
+        console.error('❌ Auth callback error:', error);
         setStatus('error');
         setMessage(
           error instanceof Error
